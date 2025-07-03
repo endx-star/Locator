@@ -3,7 +3,7 @@
 
 class Workout {
   date = new Date();
-  id = (new Date () + '').slice(-10)
+  id = (Date.now() + '' + Math.floor(Math.random() * 10000));
   constructor(coords, distance, duration) {
     this.coords = coords  // [39, -12]
     this.distance = distance  //km
@@ -60,11 +60,13 @@ const inputDuration = document.querySelector('.form__input--duration')
 class App {
   #map;
   #mapEvent;
+  #mapZoomLevel = 13;
   #workouts = [];
   constructor () {
      this._getPosition()
     form.addEventListener('submit',this._newWorkout.bind(this))
     inputType.addEventListener('change',this._toggleElevationField)
+    containerWorkout.addEventListener('click', this._moveToPopup.bind(this))
   }
     //Loading the map
   _getPosition() {
@@ -82,7 +84,7 @@ class App {
       const {longitude} = position.coords;
   
     const coords = [latitude, longitude];
-     this.#map = L.map('map').setView(coords, 13);
+     this.#map = L.map('map').setView(coords, this.#mapZoomLevel);
   
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -179,7 +181,7 @@ class App {
 
   _renderWorkout (workout) {
    let html = `
-      <li class="workout workout--${workout.type}" data-id=${workout.id}>
+      <li class="workout workout--${workout.type}" data-id="${workout.id}">
           <h2 class="workout__title">${workout.description}</h2>
           <div class="workout__details">
             <span class="workout__icon">${ workout.type === 'running' ? '🏃‍♂️' : '🚴‍♀️' } </span>
@@ -223,7 +225,22 @@ class App {
    form.insertAdjacentHTML('afterend', html)
   }
 
-  
+  _moveToPopup (e) {
+    const workoutEl = e.target.closest('.workout');
+    if(!workoutEl) return;
+
+    const workout = this.#workouts.find(
+      work => work.id === workoutEl.dataset.id
+    );
+    if (!workout) return;
+
+    this.#map.setView(workout.coords, this.#mapZoomLevel, {
+      animate: true,
+      pan: {
+        duration: 1,
+      }
+    });
+  }
 }
 
 
