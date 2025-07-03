@@ -64,6 +64,8 @@ class App {
   #workouts = [];
   constructor () {
      this._getPosition()
+     this._getLocalStorage()
+
     form.addEventListener('submit',this._newWorkout.bind(this))
     inputType.addEventListener('change',this._toggleElevationField)
     containerWorkout.addEventListener('click', this._moveToPopup.bind(this))
@@ -92,6 +94,10 @@ class App {
   
   //handling click events
   this.#map.on('click', this._showForm.bind(this))
+
+  this.#workouts.forEach(work => {
+    this._renderMarkoutMarker(work)
+  })
   
     }
   
@@ -108,6 +114,8 @@ class App {
     form.classList.add('hidden')
     setTimeout(() => form.style.display = 'grid', 1000)
   }
+
+  
 
   _toggleElevationField() {
   inputElevation.closest('.form__row').classList.toggle('form__row--hidden')
@@ -164,6 +172,8 @@ class App {
     //Hide form + clear input fields
     this._hideForm()
  
+    //set localStorage
+    this._setLocalStorage()
   }
 
   _renderMarkoutMarker(workout) {
@@ -240,6 +250,26 @@ class App {
         duration: 1,
       }
     });
+  }
+
+  _setLocalStorage () {
+     localStorage.setItem('workouts', JSON.stringify(this.#workouts))
+  }
+
+  _getLocalStorage () {
+    const data = JSON.parse(localStorage.getItem('workouts'))
+
+    if(!data) return
+    this.#workouts = data
+
+    this.#workouts.forEach(work => {
+      this._renderWorkout(work)
+    })
+  }
+
+  reset() {
+    localStorage.removeItem('workouts')
+    location.reload()
   }
 }
 
